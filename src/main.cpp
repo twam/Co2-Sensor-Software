@@ -2,20 +2,34 @@
 #include <ctime>
 #include <cstdint>
 
+#define SSD1306 1
+#define SH110X 2
+#define DISPLAY_VARIANT SSD1306
+
 #include <Arduino.h>
 #include <Wire.h>
 #include <Scd30.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_GFX.h>
+#if DISPLAY_VARIANT == SSD1306
 #include <Adafruit_SSD1306.h>
+#elif DISPLAY_VARIANT == SH110X
+#include <Adafruit_SH110X.h>
+#endif
 
 #include "pins.h"
 
 Scd30 scd30{};
 Adafruit_BMP280 bmp280;
 
+#if DISPLAY_VARIANT == SSD1306
 Adafruit_SSD1306 display{128, 64, pins::OledMosi, pins::OledClk, pins::OledDc, pins::OledReset, pins::OledCs};
+#define DISPLAY_WHITE SSD1306_WHITE
+#elif DISPLAY_VARIANT == SH110X
+Adafruit_SH110X display{128, 64, pins::OledMosi, pins::OledClk, pins::OledDc, pins::OledReset, pins::OledCs};
+#define DISPLAY_WHITE SH110X_WHITE
+#endif
 
 uint16_t last_co2_ppm = 0u;
 
@@ -148,11 +162,16 @@ void setup()
   pinMode(pins::Button4, INPUT);
 
   // Initialize Display
+
+#if DISPLAY_VARIANT == SSD1306
   display.begin(SSD1306_SWITCHCAPVCC);
   display.dim(true);
+#elif DISPLAY_VARIANT == SH110X
+  display.begin();
+#endif
+  display.setTextColor(DISPLAY_WHITE);
   display.clearDisplay();
   display.setRotation(2);
-  display.setTextColor(SSD1306_WHITE);
   display.display();
 
   // Initialize I2C
@@ -216,7 +235,7 @@ void loop()
   if (button4) {
     // Clear the buffer.
     display.clearDisplay();
-    display.setTextColor(SSD1306_WHITE);
+    display.setTextColor(DISPLAY_WHITE);
     display.setRotation(2);
     display.setTextSize(2);
     display.setCursor(0, 0);
@@ -230,7 +249,7 @@ void loop()
   } else {
     // Clear the buffer.
     display.clearDisplay();
-    display.setTextColor(SSD1306_WHITE);
+    display.setTextColor(DISPLAY_WHITE);
     display.setRotation(2);
     display.setTextSize(1);
 
@@ -244,10 +263,10 @@ void loop()
     const int16_t minimum = 400;
     const int16_t maximum = 2000;
 
-    display.drawRect(x, 0, width+2, height, SSD1306_WHITE);
+    display.drawRect(x, 0, width+2, height, DISPLAY_WHITE);
 
     // Show maximum label
-    display.drawLine(x-1, y, x, y, SSD1306_WHITE);
+    display.drawLine(x-1, y, x, y, DISPLAY_WHITE);
     {
       char *label;
       asprintf(&label, "%i", maximum);
@@ -263,7 +282,7 @@ void loop()
     }
 
     // Show middle label
-    display.drawLine(x-1, y+(height-1)/2, x, y+(height-1)/2, SSD1306_WHITE);
+    display.drawLine(x-1, y+(height-1)/2, x, y+(height-1)/2, DISPLAY_WHITE);
     {
       char *label;
       asprintf(&label, "%i", (maximum-minimum)/2+minimum);
@@ -279,7 +298,7 @@ void loop()
     }
 
     // Show minimum label
-    display.drawLine(x-1, y+(height-1), x, y+(height-1), SSD1306_WHITE);
+    display.drawLine(x-1, y+(height-1), x, y+(height-1), DISPLAY_WHITE);
     {
       char *label;
       asprintf(&label, "%i", minimum);
@@ -301,7 +320,7 @@ void loop()
       }
       const int16_t co2 = round(((measurements[pos].scd30Co2)-minimum)*(height-1)/(maximum-minimum));
       if ((co2 >= 0) and (co2 <= (height-1))) {
-        display.drawPixel(x+width-i, (height-1)-co2, SSD1306_WHITE);
+        display.drawPixel(x+width-i, (height-1)-co2, DISPLAY_WHITE);
       }
     }
 

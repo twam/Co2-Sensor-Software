@@ -284,7 +284,7 @@ void Ui::drawStatusbar(const char* title) {
     }
 
     case Network::State::NOT_CONFIGURED:
-      _display.setCursor(0, displayWidth-7);
+      _display.setCursor(displayWidth-7, 0);
       _display.printf("-");
       break;
   }

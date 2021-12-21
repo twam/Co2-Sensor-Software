@@ -31,6 +31,7 @@ private:
     PressureHistory,
     CurrentMeasurements,
     Time,
+    Version,
     NumberOfScreens
   };
 

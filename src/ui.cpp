@@ -182,6 +182,16 @@ void Ui::loop() {
       break;
     }
 
+    case Screen::Version: {
+      drawStatusbar("Version"); // 15s * 100 = 25 min
+      drawNavigation("\x1B", "", "", "\x1A");
+      _display.setCursor(0, 16);
+      _display.setTextSize(1);
+      _display.setTextColor(SSD1306_WHITE);
+      _display.printf(GIT_DESCRIBE);
+      break;
+    }
+
     default:
       break;
   }

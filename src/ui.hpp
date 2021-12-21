@@ -9,6 +9,7 @@
 
 #include "measurements.hpp"
 #include "config.hpp"
+#include "network.hpp"
 
 class Ui {
 public:
@@ -16,22 +17,40 @@ public:
 
   Ui(Config& config, const RestartCallback& restartCallback);
 
-  void setup(const Measurements* measurements);
+  void setup(const Measurements* measurements, Network *network);
   void loop();
 
   void showError(const std::string& text);
 
 private:
+  enum class Screen : uint8_t {
+    Co2Current,
+    Co2History,
+    TemperatureHistory,
+    HumidityHistory,
+    PressureHistory,
+    CurrentMeasurements,
+    Time,
+    NumberOfScreens
+  };
+
   static constexpr uint8_t displayWidth{128};
   static constexpr uint8_t displayHeight{64};
 
-  void drawDiagramm(const TimeDataInterface& data);
+  void drawStatusbar(const char* title);
+  void drawNavigation(const char* text1 = nullptr, const char* text2 = nullptr, const char* text3 = nullptr, const char* text4 = nullptr);
+  void drawDiagramm(const TimeDataInterface& data, int16_t y, Quantity quantity);
 
   Adafruit_SSD1306 _display;
   const Measurements* _measurements{};
+  Network* _network{};
   time_t _lastActivity{};
   Config& _config;
   RestartCallback _restartCallback;
+  Screen _screen{};
+
+  std::array<bool, 4u> _lastButtonStates{};
+  unsigned long _lastUpdate{};
 };
 
 #endif

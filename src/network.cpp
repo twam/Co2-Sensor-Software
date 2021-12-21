@@ -50,6 +50,8 @@ void Network::loop() {
       if ((_onConnectHandled == false) and (isWifiConnected())) {
         _onConnectHandled = true;
         onWifiConnect();
+      } else if ((_onConnectHandled == true) and (not isWifiConnected())) {
+        _onConnectHandled = false;
       }
 
       _webServer.handleClient();
@@ -96,7 +98,7 @@ void Network::enterConfigurationMode() {
   Serial.println(__FUNCTION__);
 
   WiFi.mode(WIFI_AP);
-  WiFi.persistent(false);
+  // WiFi.persistent(false);
 
   const IPAddress apIP(192, 168, 4, 1);
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
@@ -104,10 +106,9 @@ void Network::enterConfigurationMode() {
 
   _dnsServer.setTTL(0);
   _dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-  _dnsServer.start(53, "*", apIP);             // 53 is port for DNS server
+  _dnsServer.start(53, "*", apIP);
 
   _webServer.begin();
-
 }
 
 void Network::exitConfigurationMode() {
@@ -154,7 +155,7 @@ void Network::enterNotConfiguredMode() {
 void Network::exitNotConfiguredMode() {
 }
 
-bool Network::isWifiConfigured() {
+bool Network::isWifiConfigured() const {
   for (auto key : {"wifiSsid", "wifiPassword"}) {
     auto value = _config.getValueAsString(key);
     if ((not value) or (value.value().empty())) {
@@ -165,15 +166,31 @@ bool Network::isWifiConfigured() {
   return true;
 }
 
-bool Network::isWifiConnected() {
+bool Network::isWifiConnected() const {
   return (WiFi.status() == WL_CONNECTED);
 }
-#include "time.h"
 
 void Network::onWifiConnect() {
-  Serial.printf("Connected to Wifi");
+  const auto ntpServer = _config.getValueAsString("ntpServer").value_or("");
+  const auto tzInfo = _config.getValueAsString("tzInfo").value_or("");
 
-  configTime(_config.getValueAsInt("timeZoneOffset").value_or(0), _config.getValueAsInt("dstOffset").value_or(0), _config.getValueAsString("ntpServer").value_or("").c_str());
+  if (not ntpServer.empty()) {
+    Serial.printf("Getting time from %s.\r\n", ntpServer.c_str());
+    configTzTime(tzInfo.c_str(), ntpServer.c_str());
+
+    // Call getLocalTime to trigger update of time. Unclear why this is required.
+    struct tm timeinfo;
+    if(!getLocalTime(&timeinfo)){
+      Serial.println("Failed to obtain time");
+      return;
+    }
+    Serial.println(&timeinfo, "Time is %A, %B %d %Y %H:%M:%S.");
+  }
+}
+
+
+long Network::getWifiRssi() const {
+  return WiFi.RSSI();
 }
 
 void Network::onWebServerRoot() {
@@ -192,22 +209,22 @@ void Network::onWebServerRoot() {
 
   _webServer.sendContent("<div><table>");
 
-  if ((asprintf(&s,"<tr><td>Co2</td><td>%5.0f ppm</td></tr>", measurement.scd30Co2) != -1) and s) {
+  if ((asprintf(&s,"<tr><td>Co2</td><td>%5.0f ppm</td></tr>", measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Scd30Co2)]) != -1) and s) {
     _webServer.sendContent(s);
     free(s);
   }
 
-  if ((asprintf(&s,"<tr><td>Temperature</td><td>%5.1f °C</td></tr>", measurement.scd30Temperature) != -1) and s) {
+  if ((asprintf(&s,"<tr><td>Temperature</td><td>%5.1f °C</td></tr>", measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Scd30Temperature)]) != -1) and s) {
     _webServer.sendContent(s);
     free(s);
   }
 
-  if ((asprintf(&s,"<tr><td>Humidity</td><td>%5.1f %%</td></tr>", measurement.scd30Humidity) != -1) and s) {
+  if ((asprintf(&s,"<tr><td>Humidity</td><td>%5.1f %%</td></tr>", measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Scd30Humidity)]) != -1) and s) {
     _webServer.sendContent(s);
     free(s);
   }
 
-  if ((asprintf(&s,"<tr><td>Pressure</td><td>%5.0f mBar</td></tr>", measurement.bmp280Pressure) != -1) and s) {
+  if ((asprintf(&s,"<tr><td>Pressure</td><td>%5.0f mBar</td></tr>", measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Bmp280Pressure)]) != -1) and s) {
     _webServer.sendContent(s);
     free(s);
   }

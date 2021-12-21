@@ -44,7 +44,7 @@ void setup() {
   digitalWrite(pins::ledUser, LOW);
   digitalWrite(pins::ledDisable, LOW);
 
-  ui.setup(&measurements);
+  ui.setup(&measurements, &network);
   network.setup(&measurements);
   measurements.setup();
 }

@@ -54,14 +54,13 @@ private:
 
   void writeToFile();
 
-  std::array<ConfigEntry, 10> _entries = {
+  std::array<ConfigEntry, 9> _entries = {
     ConfigEntry{"wifiSsid", std::string{""}},
     ConfigEntry{"wifiPassword", std::string{""}},
     ConfigEntry("hostname", std::string{"Co2-Sensor"}),
     ConfigEntry{"sleepTimeout", int{60}},
-    ConfigEntry{"ntpServer", std::string{"pool.ntp.org"}},
-    ConfigEntry{"timeZoneOffset", int{3600}},
-    ConfigEntry{"dstOffset", int{3600}},
+    ConfigEntry{"ntpServer", std::string{"de.pool.ntp.org"}},
+    ConfigEntry{"tzInfo", std::string{"CET-1CEST,M3.5.0,M10.5.0/3"}},
     ConfigEntry{"webUserName", std::string{"admin"}},
     ConfigEntry{"webPassword", std::string{"password"}},
     ConfigEntry{"webAuthentification", bool{false}},

@@ -2,6 +2,7 @@
 
 #include "measurements.hpp"
 #include "pins.hpp"
+#include <type_traits>
 
 void Measurements::setup() {
   // Initialize I2C
@@ -18,26 +19,26 @@ void Measurements::loop() {
     Measurement& measurement = _dataLast.getMeasurement(0);
 
     measurement.time = time(nullptr);
-    if (not _scd30.getMeasurement(measurement.scd30Co2, measurement.scd30Temperature, measurement.scd30Humidity)) {
+    if (not _scd30.getMeasurement(measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Scd30Co2)], measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Scd30Temperature)], measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Scd30Humidity)])) {
       Serial.printf("getMeasurement failed\r\n");
     }
 
-    measurement.bmp280Pressure = _bmp280.readPressure() / 100.0;
-    measurement.bmp280Temperature = _bmp280.readTemperature();
+    measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Bmp280Pressure)] = _bmp280.readPressure() / 100.0;
+    measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Bmp280Temperature)] = _bmp280.readTemperature();
 
     Serial.printf(" SDS30:      CO2: %5.0f ppm    Temperature: %5.1f °C   Humidity: %5.1f %%\r\n",
-      measurement.scd30Co2,
-      measurement.scd30Temperature,
-      measurement.scd30Humidity);
+      measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Scd30Co2)],
+      measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Scd30Temperature)],
+      measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Scd30Humidity)]);
     Serial.printf("BMP280: Pressure: %5.0f mbar   Temperature: %5.1f °C\r\n",
-      measurement.bmp280Pressure,
-      measurement.bmp280Temperature);
+      measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Bmp280Pressure)],
+      measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Bmp280Temperature)]);
 
     // Check if pressure changed and update SCD30 if required
-    if (fabs(_pressureScd30 - measurement.bmp280Pressure) >= 1.0) {
-      Serial.printf("Updating ambient pressure from %5.0f mbar to %5.0f mbar.\r\n", _pressureScd30, measurement.bmp280Pressure);
-      if (_scd30.startContinousMeasurement(measurement.bmp280Pressure)) { // mbar
-        _pressureScd30 = measurement.bmp280Pressure;
+    if (fabs(_pressureScd30 - measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Bmp280Pressure)]) >= 1.0) {
+      Serial.printf("Updating ambient pressure from %5.0f mbar to %5.0f mbar.\r\n", _pressureScd30, measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Bmp280Pressure)]);
+      if (_scd30.startContinousMeasurement(measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Bmp280Pressure)])) { // mbar
+        _pressureScd30 = measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Bmp280Pressure)];
       } else {
         Serial.printf("Update failed.\n");
       }

@@ -23,14 +23,18 @@ public:
   void setup(const Measurements* measurements);
   void loop();
 
+  long getWifiRssi() const;
+  bool isWifiConnected() const;
+
+  State getState() const { return _state; }
+
 private:
 
   void setupWebserver();
 
   void gotoState(State state);
 
-  bool isWifiConfigured();
-  bool isWifiConnected();
+  bool isWifiConfigured() const;
 
   void enterConfigurationMode();
   void exitConfigurationMode();

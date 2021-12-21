@@ -5,18 +5,24 @@
 #include <string>
 #include <ctime>
 #include <utility>
+#include <array>
 
 #include <Scd30.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
 
+enum class Quantity {
+  Scd30Co2,
+  Scd30Temperature,
+  Scd30Humidity,
+  Bmp280Pressure,
+  Bmp280Temperature,
+  NumberOfQuantities
+};
+
 struct Measurement {
   time_t time;
-  float scd30Co2;
-  float scd30Temperature;
-  float scd30Humidity;
-  float bmp280Pressure;
-  float bmp280Temperature;
+  std::array<float, static_cast<size_t>(Quantity::NumberOfQuantities)> data;
 };
 
 class TimeDataInterface {

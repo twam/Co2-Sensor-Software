@@ -26,7 +26,7 @@ void Measurements::loop() {
     measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Bmp280Pressure)] = _bmp280.readPressure() / 100.0;
     measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Bmp280Temperature)] = _bmp280.readTemperature();
 
-    Serial.printf(" SDS30:      CO2: %5.0f ppm    Temperature: %5.1f °C   Humidity: %5.1f %%\r\n",
+    Serial.printf(" SCD30:      CO2: %5.0f ppm    Temperature: %5.1f °C   Humidity: %5.1f %%\r\n",
       measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Scd30Co2)],
       measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Scd30Temperature)],
       measurement.data[static_cast<std::underlying_type_t<Quantity>>(Quantity::Scd30Humidity)]);

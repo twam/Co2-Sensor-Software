@@ -28,6 +28,7 @@ void Network::setup(const Measurements* measurements) {
 void Network::setupWebserver() {
   _webServer.on("/", [this]() { onWebServerRoot(); });
   _webServer.on("/config", [this]() { onWebServerConfig(); });
+  _webServer.onNotFound([this]() { onWebServerConfig(); });
 }
 
 void Network::loop() {
@@ -182,18 +183,27 @@ void Network::onWifiConnect() {
   }
 }
 
-
 long Network::getWifiRssi() const {
   return WiFi.RSSI();
 }
 
+void Network::sendHttpRedirect(const char* url) {
+  _webServer.sendHeader("Location", url);
+  _webServer.send(302, contentTypeHtmlUtf8, "");
+}
+
 void Network::onWebServerRoot() {
+  if (_state == State::CONFIGURATION_MODE) {
+    sendHttpRedirect("http://192.168.4.1/config");
+    return;
+  }
+
   if (not requestWebServerAuthentication()) {
     return;
   }
 
   _webServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
-  _webServer.send(200, "text/html", html::header);
+  _webServer.send(200, contentTypeHtmlUtf8, html::header);
   _webServer.sendContent("<meta http-equiv='refresh' content='15'>");
   _webServer.sendContent(html::body);
 
@@ -249,18 +259,18 @@ bool Network::requestWebServerAuthentication() {
 }
 
 void Network::onWebServerConfig() {
-  if (not requestWebServerAuthentication()) {
+  if ((_state != State::CONFIGURATION_MODE) and (not requestWebServerAuthentication())) {
     return;
   }
 
-  _webServer.sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
-  _webServer.sendHeader(F("Pragma"), F("no-cache"));
-  _webServer.sendHeader(F("Expires"), F("0"));
+  _webServer.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  _webServer.sendHeader("Pragma", "no-cache");
+  _webServer.sendHeader("Expires", "0");
 
   // Enable Pagination (Chunked Transfer)
   _webServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
 
-  _webServer.send(200, "text/html", html::header);
+  _webServer.send(200, contentTypeHtmlUtf8, html::header);
   _webServer.sendContent(html::body);
 
   if (_webServer.method() == HTTP_GET) {
@@ -331,3 +341,10 @@ void Network::onWebServerConfig() {
   }
 }
 
+void Network::onWebServerNotFound() {
+  if (_state == State::CONFIGURATION_MODE) {
+    sendHttpRedirect("http://192.168.4.1/config");
+  } else {
+    _webServer.send(404, contentTypePlain, "Not found.");
+  }
+}

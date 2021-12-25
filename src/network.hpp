@@ -30,6 +30,9 @@ public:
 
 private:
 
+  static constexpr const char* contentTypeHtmlUtf8 = "text/html; charset=utf-8";
+  static constexpr const char* contentTypePlain = "text/plain";
+
   void setupWebserver();
 
   void gotoState(State state);
@@ -45,10 +48,12 @@ private:
 
   void onWebServerRoot();
   void onWebServerConfig();
+  void onWebServerNotFound();
 
   void onWifiConnect();
 
   bool requestWebServerAuthentication();
+  void sendHttpRedirect(const char* url);
 
   Config &_config;
   DNSServer _dnsServer{};

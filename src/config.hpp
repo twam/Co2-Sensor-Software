@@ -47,8 +47,6 @@ private:
   std::optional<std::reference_wrapper<ConfigEntry>> getEntry(const char* name);
   std::optional<std::reference_wrapper<const ConfigEntry>> getEntry(const char* name) const;
 
-  // Entries _entries;
-
   void readFromFile();
   std::tuple<bool, DynamicJsonDocument> readJsonFromFile(const char* filename);
 

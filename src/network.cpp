@@ -1,10 +1,4 @@
-
 #include <WiFi.h>
-// #include <WiFiClient.h>
-// #include <WiFiClientSecure.h>
-// #include <HardwareSerial.h>
-// #include <hwcrypto/sha.h>
-// #include <ESPmDNS.h>
 
 #include "network.hpp"
 #include "pins.hpp"

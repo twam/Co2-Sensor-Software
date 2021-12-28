@@ -31,7 +31,7 @@ void Ui::setup(const Measurements* measurements, Network *network) {
 }
 
 void Ui::loop() {
-  // Only do something every 50ms
+  // Only do something every 50 ms
   if ((millis() < _lastUpdate) or ((millis() - _lastUpdate) < 50)) {
     return;
   }
@@ -48,7 +48,6 @@ void Ui::loop() {
   time_t now;
   time(&now);
 
-
   for (size_t i = 0u; i < buttonEvent.size(); ++i) {
     buttonEvent[i] = (_lastButtonStates[i] == false) & (buttonStates[i] == true);
   }
@@ -57,7 +56,8 @@ void Ui::loop() {
     _lastActivity = now;
   }
 
-  const auto displayEnabled = (now - _lastActivity) < _config.getValueAsInt("sleepTimeout").value_or(0);
+  const auto sleepTimeOut = _config.getValueAsInt("sleepTimeout").value_or(0);
+  const auto displayEnabled = (sleepTimeOut > 0) and ((now - _lastActivity) < sleepTimeOut);
 
   if (not displayEnabled) {
     _display.clearDisplay();

@@ -52,6 +52,7 @@ private:
 
   std::array<bool, 4u> _lastButtonStates{};
   unsigned long _lastUpdate{};
+  bool _sleeping{false};
 };
 
 #endif

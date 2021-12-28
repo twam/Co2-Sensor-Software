@@ -57,12 +57,23 @@ void Ui::loop() {
   }
 
   const auto sleepTimeOut = _config.getValueAsInt("sleepTimeout").value_or(0);
-  const auto displayEnabled = (sleepTimeOut > 0) and ((now - _lastActivity) < sleepTimeOut);
+  const auto shouldSleep = (sleepTimeOut > 0) and ((now - _lastActivity) >= sleepTimeOut);
 
-  if (not displayEnabled) {
-    _display.clearDisplay();
-    _display.display();
-    return;
+  if (shouldSleep) {
+    if (_sleeping) {
+      // Already sleeping. Nothing left to do.
+      return;
+    } else {
+      // We're start sleep, so clean display.
+      _display.clearDisplay();
+      _display.display();
+      _sleeping = true;
+      return;
+    }
+  } else if ((not shouldSleep) and (_sleeping)) {
+    // Reset button press events to avoid 'double' actions (wake-up and following act ion)
+    _sleeping = false;
+    std::fill(buttonEvent.begin(), buttonEvent.end(), false);
   }
 
   _display.clearDisplay();
@@ -71,7 +82,7 @@ void Ui::loop() {
 
   switch (_screen) {
     case Screen::Co2Current: {
-      drawStatusbar("Co2"); // 15s * 100 = 25 min
+      drawStatusbar("Co2");
       drawNavigation("\x1B", "", "", "\x1A");
 
       _display.setCursor(0, 16);

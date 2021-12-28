@@ -3,7 +3,7 @@
  */
 
 #include <Arduino.h>
-#include "SCD30.h"
+#include "Scd30.h"
 #include <climits>
 
 bool Scd30::startContinousMeasurement(uint16_t ambientPressure) {

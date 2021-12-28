@@ -17,8 +17,6 @@ Use the [PlatformIO](https://platformio.org) IDE to download dependencies, tools
 
 In order to flash, you need to have  the CO2 Sensor connected to your build system via USB.
 
+## Reset
 
-
-
-
-
+Pressing the left two buttons will trigger a hardware reset/reboot.
